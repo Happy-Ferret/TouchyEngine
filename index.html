@@ -76,8 +76,13 @@ function onloadf() {
         var canvas = document.getElementById('maincanvas')
         var maskcanvas = document.getElementById('maskcanvas')
 
-        scale = window.innerHeight/canvas.height
-        mscale = window.innerHeight/maskcanvas.height
+        if(window.innerHeight > window.innerWidth){
+            scale = window.innerWidth/canvas.width
+            mscale = window.innerWidth/maskcanvas.width            
+        } else { 
+            scale = window.innerHeight/canvas.height
+            mscale = window.innerHeight/maskcanvas.height
+        }
 
         canvas.style.height = scale*canvas.height + 'px';
         canvas.style.width = scale*canvas.width + 'px';
