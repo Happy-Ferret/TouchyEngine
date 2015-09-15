@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>title</title>
+<html lang="en"><head><meta charset="utf-8"><title>title</title><link rel="stylesheet" type="text/css" href="style.css" >
 <script type="text/javascript" src="https://raw.githack.com/ericoporto/TouchyEngine/master/touchy.js"></script>
 </head><body onload="onloadf();">
     <!-- page content -->
@@ -7,24 +7,6 @@
 function onloadf() { touchy()}
  
 </script>
-<div id="canvasesdiv" style="position:relative; width:640px; height:480px">
-<canvas id="maskcanvas"
-style="z-index: 1;
-position:absolute;
-left:0px;
-top:0px;
-visibility:hidden;" height="480px" width="640">
-This text is displayed if your browser does not support HTML5 Canvas.
-</canvas>
-<canvas id="maincanvas"
-style="z-index: 2;
-position:absolute;
-left:0px;
-top:0px;
-" height="480px" width="640">
-This text is displayed if your browser does not support HTML5 Canvas.
-</canvas>
-</div>
-
+<div id="gameArea"></div>
 
 </body></html>
