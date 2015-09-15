@@ -64,7 +64,7 @@ function screen() {
         
     }
 
-    this.writeMessage = function(message, bgcolor='#ffffff') {
+    this.writeMessage = function(message,bgcolor) {
         ctx.fillStyle = rgbToHex(bgcolor);
         ctx.fillRect(0, 0, 300, 30);
         ctx.font = '18pt Calibri';
