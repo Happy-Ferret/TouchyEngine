@@ -1,12 +1,37 @@
 function screen() {
     //private
+    var cnvwidth = 640;
+    var cnvheight = 480; 
+
+    var gamearea = document.getElementById('gameArea')
+    var arraycnvs = [ 'maskcanvas', 'maincanvas']
+    var cnvs = []
+
+    for (var i=0; i<arraycnvs.length; i++){
+        var canvas = document.createElement('canvas')
+        canvas.id     = arraycnvs[i];
+        canvas.width  = cnvwidth;
+        canvas.height = cnvheight;
+        canvas.style.display= 'block';
+        canvas.style.zIndex   = i+1;
+        canvas.style.position = "absolute"; //required by zIndex
+
+        canvas.style.left = 0; //this 
+        canvas.style.right = 0; //this
+        canvas.style.marginLeft = "auto"; //this and
+        canvas.style.marginRight = "auto" //this makes all canvas centered
+
+        canvas.style['image-rendering'] = "pixelated";
+        gamearea.appendChild(canvas);
+        cnvs[arraycnvs[i]] = canvas
+    }
+
     var maincanvas = document.getElementById('maincanvas')
     var maskcanvas = document.getElementById('maskcanvas')
     var ctx = maincanvas.getContext('2d');
     var ctxm = maskcanvas.getContext('2d');
     var maskdata = []
 
-    var scale = 1;
     var mscale = 1;
 
     function getpixel(x,y){
@@ -30,18 +55,20 @@ function screen() {
     }
 
     function resizecanvases(){
-        if(window.innerHeight > window.innerWidth){
-            scale = window.innerWidth/maincanvas.width
-            mscale = window.innerWidth/maskcanvas.width            
-        } else { 
-            scale = window.innerHeight/maincanvas.height
-            mscale = window.innerHeight/maskcanvas.height
+        var scale = 1
+        for(var canva in cnvs){
+            if(window.innerHeight > window.innerWidth){
+                scale = window.innerWidth/cnvs[canva].width       
+            } else { 
+                scale = window.innerHeight/cnvs[canva].height
+            }
+            cnvs[canva].style.height = scale*cnvs[canva].height + 'px';
+            cnvs[canva].style.width = scale*cnvs[canva].width + 'px';
+            if(canva = 'maskcanvas'){
+                mscale = scale
+            }
         }
-
-        maincanvas.style.height = scale*maincanvas.height + 'px';
-        maincanvas.style.width = scale*maincanvas.width + 'px';
-        maskcanvas.style.height = mscale*maskcanvas.height + 'px';
-        maskcanvas.style.width = mscale*maskcanvas.width + 'px';
+        
     }
 
     //public
@@ -71,8 +98,6 @@ function screen() {
         ctx.fillStyle = 'black';
         ctx.fillText(message, 10, 25);
     }
-
-
 
     this.getxycolor = function(xx,yy){
 
