@@ -178,7 +178,8 @@ function touchy() {
         scr.writeMessage(message, pixel);
     }
 
-    function getmsgcolor(argb, cmap=level.cmap){
+    function getmsgcolor(argb){
+        var cmap = level.cmap
         var color = c.normalcolor(argb)
         if(color in cmap){
             return cmap[color]
