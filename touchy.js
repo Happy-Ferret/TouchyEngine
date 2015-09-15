@@ -91,7 +91,7 @@ function touchy() {
    
     resizecanvases()
 
-    canvas.addEventListener('click', function(evt) {
+    canvas.addEventListener('mousemove', function(evt) {
         var canvas = document.getElementById('maincanvas');
         var mousePos = getMousePos(canvas, evt);
         writecxymessage(canvas, Math.floor(mousePos.x/mscale), Math.floor(mousePos.y/mscale));
