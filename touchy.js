@@ -1,10 +1,35 @@
 function screen() {
+    (function() {
+		    var lastTime = 0;
+		    var vendors = ['ms', 'moz', 'webkit', 'o'];
+		    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+			    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+			    window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+			    || window[vendors[x]+'CancelRequestAnimationFrame'];
+		    }
+
+		    if (!window.requestAnimationFrame)
+			    window.requestAnimationFrame = function(callback, element) {
+				    var currTime = new Date().getTime();
+				    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+				    var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+				    timeToCall);
+				    lastTime = currTime + timeToCall;
+				    return id;
+			    };
+
+			    if (!window.cancelAnimationFrame)
+				    window.cancelAnimationFrame = function(id) {
+					    clearTimeout(id);
+				    };
+			    }());
+
     //private
     var cnvwidth = 640;
     var cnvheight = 480; 
 
     var gamearea = document.getElementById('gameArea')
-    var arraycnvs = [ 'maskcanvas', 'maincanvas']
+    var arraycnvs = [ 'maskcanvas', 'maincanvas', 'activecanvas']
     var cnvs = []
 
     for (var i=0; i<arraycnvs.length; i++){
@@ -30,6 +55,7 @@ function screen() {
     var maskcanvas = document.getElementById('maskcanvas')
     var ctx = maincanvas.getContext('2d');
     var ctxm = maskcanvas.getContext('2d');
+    var actx = document.getElementById('activecanvas').getContext('2d');
     var maskdata = []
 
     var mscale = 1;
@@ -71,8 +97,14 @@ function screen() {
         
     }
 
+    function drawplayer(){
+        
+    }
+
     //public
-    this.canvas = maincanvas
+    this.requestAnimationFrame = window.requestAnimationFrame
+
+    this.topcanvas = cnvs[arraycnvs[arraycnvs.length -1]]
 
     this.loadlevel = function(level){
         var img1 = new Image();
@@ -107,13 +139,30 @@ function screen() {
 		var y=Math.floor((yy-offsetTop)/mscale);
         var pixel = getpixel(x, y);
         return pixel
+    };
+
+    this.getxyfromxy = function(xx,yy){
+        var offsetLeft = maskcanvas.offsetLeft;
+        var offsetTop = maskcanvas.offsetTop;
+        var x=Math.floor((xx-offsetLeft)/mscale);
+		var y=Math.floor((yy-offsetTop)/mscale);
+        return {x: x, y: y}
     }
 
+    this.drawloop = function(p){ 
+        actx.clearRect(0,0,cnvwidth,cnvheight)
+        actx.fillStyle = 'black';
+        actx.fillRect(p.x-p.w/2, p.y-p.h, p.w, p.h);       
+    };
+
+    this.loop = function(){};
+    
     //init
     resizecanvases()
 }
 
-function _hid(scr, whatsxy){
+
+function _hid(scr, whenclick, whenmove){
     //private
     function getMousePos(canvas, evt) {
         return {
@@ -128,18 +177,26 @@ function _hid(scr, whatsxy){
         };
     }
 
-    var canvas = scr.canvas
-    var testxy = whatsxy
+    var canvas = scr.topcanvas
+    var fwhenclick = whenclick
+    var fwhenmove = whenmove
     
+    canvas.addEventListener('click', function(evt) {
+        var pos = getMousePos(canvas, evt);
+        fwhenclick(pos.x,pos.y)
+        
+    }, false);
+
     canvas.addEventListener('mousemove', function(evt) {
         var pos = getMousePos(canvas, evt);
-        testxy(pos.x,pos.y)
+        fwhenmove(pos.x,pos.y)
         
     }, false);
 
     canvas.addEventListener('ontouchstart', function(evt) {
         var pos = getTouchPos(canvas, evt);
-        testxy(pos.x,pos.y)
+        fwhenmove(pos.x,pos.y)
+        fwhenclick(pos.x,pos.y)
 
     }, false);
 
@@ -189,12 +246,91 @@ function colors(){
 }
 
 function touchy() {
-    var level = {
-        bgimg: 'nasa.png',
-        maskimg: 'nasamask8.png',
-        cmap: {'red': 'space building',
-               'gray':'sky, final frontier',
-               'lime':'the wheel' }
+
+    var player = []
+    var level = []
+    var path = []
+
+    var walkmatrix = []
+    var distancemx = []
+    var grid = []
+
+    var finder = new PF.AStarFinder({
+        allowDiagonal: true,
+        dontCrossCorners: true
+    });
+
+    function Create2DArray(rows) {
+        var arr = [];
+
+        for (var i=0;i<rows;i++) {
+            arr[i] = [];
+        }
+
+        return arr;
+    }
+
+    function createwalkable(){
+        var cnvwidth = 640;
+        var cnvheight = 480;
+        var canvas = document.createElement('canvas');
+        canvas.width  = cnvwidth;
+        canvas.height = cnvheight;
+
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
+                
+        img.onload = function () {
+            ctx.drawImage(img, 0, 0);
+            walkdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            walkmatrix = Create2DArray(cnvheight)
+            distancemx = Create2DArray(cnvheight)
+
+            //console.log(walkdata.height)
+            //console.log(walkdata.width)
+
+            for (var j=0; j<walkdata.height; j++) {
+                for (var i=0; i<walkdata.width; i++) {
+                    var index=(j*4)*walkdata.width+(i*4);
+                    var red=walkdata.data[index];   
+                    var green=walkdata.data[index+1];
+                    var blue=walkdata.data[index+2];    
+                    var average=Math.floor((red+green+blue)/3);
+
+                    walkmatrix[j][i] = (average < 32);
+                    distancemx[j][i] = average/256.0;
+
+                }
+            }
+
+            //console.log(walkmatrix)
+
+            grid = new PF.Grid(walkmatrix);
+            //console.log(grid)
+        };
+        img.src = level.walkimg;
+    }
+
+    function walktoxy(x,y){
+        var gridBackup = grid.clone();
+        var destiny = scr.getxyfromxy(x,y)
+        console.log('destination: '+ destiny.x + ', '+ destiny.y )
+        console.log('playerpos: '+ player.x + ', ' + player.y )
+        console.log(gridBackup)
+
+        console.log(walkmatrix[destiny.y][destiny.x])
+
+        path = finder.findPath(player.x, player.y, destiny.x, destiny.y, gridBackup);
+        console.log(path) 
+        
+    }
+
+    function consumepath(){
+        if(path.length){
+            var cords = path.shift();
+            player.x = cords[0];
+            player.y = cords[1];
+        }
     }
 
     function whatsxy(x,y){
@@ -213,10 +349,40 @@ function touchy() {
         }
     }
 
+    function loadlevel(){
+
+        level = {
+            bgimg: 'nasa.png',
+            maskimg: 'nasamask8.png',
+            walkimg: 'nasawalkmask8.png',
+            cmap: {'red': 'space building',
+                   'gray':'sky, final frontier',
+                   'lime':'the wheel' }
+        }
+
+        player = {
+            x: 400,
+            y: 350,
+            h: 100,
+            w: 50
+        }
+
+        scr.loadlevel(level)
+        createwalkable()    
+    }
+
     var c = new colors()
     var scr = new screen()
-    var hid = new _hid(scr, whatsxy)
+    scr.loop = function(){
+        consumepath()
+        scr.drawloop(player);
+        this.requestAnimationFrame.call(window,scr.loop);
+    };
 
-    scr.loadlevel(level)
+    var hid = new _hid(scr, walktoxy, whatsxy)
+
+    loadlevel()
+    scr.loop()
+
 }
 
