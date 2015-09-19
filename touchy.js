@@ -309,12 +309,12 @@ function touchy() {
                     var average=Math.floor((red+green+blue)/3);
 
                     walkmatrix[j][i] = (average < 32);
-                    distancemx[j][i] = average/256.0;
+                    distancemx[j][i] = average/255.0;
 
                 }
             }
 
-            //console.log(walkmatrix)
+            console.log(distancemx)
 
             grid = new PF.Grid(walkmatrix);
             //console.log(grid)
@@ -347,6 +347,9 @@ function touchy() {
                     var cords = path.shift();
                     player.x = cords[0];
                     player.y = cords[1];
+                    var size = distancemx[player.y][player.x]
+                    player.w = Math.floor(player.ow * size)
+                    player.h = Math.floor(player.oh * size)
                 }
             }
 
@@ -384,11 +387,15 @@ function touchy() {
             x: 250,
             y: 200,
             h: 50,
-            w: 25
+            w: 25,
+            oh: 50,
+            ow: 25
         }
 
         scr.loadlevel(level)
-        createwalkable()    
+        createwalkable()  
+
+
     }
 
     var c = new colors()
@@ -402,6 +409,9 @@ function touchy() {
     var hid = new _hid(scr, walktoxy, whatsxy)
 
     loadlevel()
+
+
+
     scr.loop()
 
 }
