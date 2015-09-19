@@ -154,10 +154,11 @@ function screen(width, height) {
         return {x: x, y: y}
     }
 
+    actx.fillStyle = '#330033';
+
     this.drawloop = function(p){ 
         actx.clearRect(0,0,cnvwidth,cnvheight)
-        actx.fillStyle = 'black';
-        actx.fillRect(p.x-p.w/2, p.y-p.h, p.w, p.h);       
+        actx.fillRect(p.x-Math.floor(p.w/2), p.y-p.h, p.w, p.h);       
     };
 
     this.loop = function(){};
@@ -324,29 +325,31 @@ function touchy() {
     function walktoxy(x,y){
         var gridBackup = grid.clone();
         var destiny = scr.getxyfromxy(x,y)
-        console.log('destination: '+ destiny.x + ', '+ destiny.y )
-        console.log('playerpos: '+ player.x + ', ' + player.y )
-        console.log(gridBackup)
-
-        console.log(walkmatrix[destiny.y][destiny.x])
+        //console.log('destination: '+ destiny.x + ', '+ destiny.y )
+        //console.log('playerpos: '+ player.x + ', ' + player.y )
+        //console.log(gridBackup)
+        //console.log(walkmatrix[destiny.y][destiny.x])
 
         path = finder.findPath(player.x, player.y, destiny.x, destiny.y, gridBackup);
-        console.log(path) 
+        //console.log(path) 
         
     }
 
     function consumepath(){
-        var consume = 2
-        if(ismobile){
-            consume = 3*consume
-        }
-        
-        for(;consume>0;consume--){
-            if(path.length){
-                var cords = path.shift();
-                player.x = cords[0];
-                player.y = cords[1];
+        if(path.length){
+            var consume = 2
+            if(ismobile){
+                consume = 3*consume
             }
+            
+            for(;consume>0;consume--){
+                if(path.length){
+                    var cords = path.shift();
+                    player.x = cords[0];
+                    player.y = cords[1];
+                }
+            }
+
         }
     }
 
