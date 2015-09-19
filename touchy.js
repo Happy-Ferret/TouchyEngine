@@ -1,4 +1,4 @@
-function screen() {
+function screen(width, height) {
     (function() {
 		    var lastTime = 0;
 		    var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -25,8 +25,8 @@ function screen() {
 			    }());
 
     //private
-    var cnvwidth = 640;
-    var cnvheight = 480; 
+    var cnvwidth = width;
+    var cnvheight = height; 
 
     var gamearea = document.getElementById('gameArea')
     var arraycnvs = [ 'maskcanvas', 'maincanvas', 'activecanvas']
@@ -255,6 +255,9 @@ function touchy() {
     var distancemx = []
     var grid = []
 
+    var width = 320;
+    var height = 240;
+
     var finder = new PF.AStarFinder({
         allowDiagonal: true,
         dontCrossCorners: true
@@ -271,11 +274,11 @@ function touchy() {
     }
 
     function createwalkable(){
-        var cnvwidth = 640;
-        var cnvheight = 480;
+
         var canvas = document.createElement('canvas');
-        canvas.width  = cnvwidth;
-        canvas.height = cnvheight;
+        canvas.width  = width;
+        canvas.height = height;
+        canvas.style['image-rendering'] = "pixelated";
 
         var ctx = canvas.getContext('2d');
         var img = new Image();
@@ -283,8 +286,8 @@ function touchy() {
         img.onload = function () {
             ctx.drawImage(img, 0, 0);
             walkdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            walkmatrix = Create2DArray(cnvheight)
-            distancemx = Create2DArray(cnvheight)
+            walkmatrix = Create2DArray(canvas.height)
+            distancemx = Create2DArray(canvas.height)
 
             //console.log(walkdata.height)
             //console.log(walkdata.width)
@@ -331,6 +334,11 @@ function touchy() {
             player.x = cords[0];
             player.y = cords[1];
         }
+        if(path.length){
+            var cords = path.shift();
+            player.x = cords[0];
+            player.y = cords[1];
+        }
     }
 
     function whatsxy(x,y){
@@ -361,10 +369,10 @@ function touchy() {
         }
 
         player = {
-            x: 400,
-            y: 350,
-            h: 100,
-            w: 50
+            x: 250,
+            y: 200,
+            h: 50,
+            w: 25
         }
 
         scr.loadlevel(level)
@@ -372,7 +380,7 @@ function touchy() {
     }
 
     var c = new colors()
-    var scr = new screen()
+    var scr = new screen(width, height)
     scr.loop = function(){
         consumepath()
         scr.drawloop(player);
