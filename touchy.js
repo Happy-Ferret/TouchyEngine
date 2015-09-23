@@ -236,6 +236,7 @@ function screen(width, height) {
         var img1 = new Image();
         img1.onload = function () {
             ctx.drawImage(img1, 0, 0);
+            createbgobjs(level.bgobjimg)
         };
         img1.src = level.bgimg;
 
@@ -246,7 +247,7 @@ function screen(width, height) {
         };
         img2.src = level.maskimg;
 
-        createbgobjs(level.bgobjimg)
+        
     }
 
     this.writeMessage = function(message,bgcolor) {
