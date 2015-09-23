@@ -39,6 +39,8 @@ function screen(width, height) {
     var arraycnvs = [ 'maskcanvas', 'maincanvas', 'activecanvas']
     var cnvs = []
 
+    var ccl = new cclb()
+
     for (var i=0; i<arraycnvs.length; i++){
         var canvas = document.createElement('canvas')
         canvas.id     = arraycnvs[i];
@@ -89,7 +91,8 @@ function screen(width, height) {
 
     function resizecanvases(){
         var scale = 1
-        for(var canva in cnvs){
+        for (var i=0; i<arraycnvs.length; i++){
+            var canva = arraycnvs[i];
             if(window.innerHeight > window.innerWidth){
                 scale = window.innerWidth/cnvs[canva].width       
             } else { 
@@ -106,6 +109,122 @@ function screen(width, height) {
 
     function drawplayer(){
         
+    }
+
+    function imgtomatrix(imgfile,rgbcondition, callback){
+        var canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        canvas.style['image-rendering'] = "pixelated";
+
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
+        img.onload = function () {
+            ctx.drawImage(img, 0, 0);
+            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            var matrix = Create2DArray(canvas.height)
+
+            for (var j=0; j<imgData.height; j++) {
+                for (var i=0; i<imgData.width; i++) {
+                    var index=(j*4)*imgData.width+(i*4);
+                    var red=imgData.data[index];   
+                    var green=imgData.data[index+1];
+                    var blue=imgData.data[index+2];    
+
+                    matrix[j][i] = rgbcondition(red,green,blue);
+
+                }
+            }
+
+            callback(matrix);
+        };
+        img.src = imgfile;
+
+    }
+
+    function imgdataAlphaFromLabel(bbd, label, imgdata){
+        var tf = bbd.l
+        function oneDto2D(onedarr, w, x, y){
+            return(onedarr[y*w+x])
+        }
+
+        for (var j=0; j<imgdata.height; j++) {
+            for (var i=0; i<imgdata.width; i++) {
+                var index=(j*4)*imgdata.width+(i*4);
+
+                if( oneDto2D(label, imgdata.width, i, j) != tf){
+                    //make alpha total
+                    imgdata.data[index+3]=0;  
+                }
+            }
+        }
+
+        return imgdata
+        
+    }
+
+    function objtoimg(bbd, label){
+        var bgimg = document.getElementById('maincanvas')
+
+        var tmpcanvas = document.createElement('canvas');
+        tmpcanvas.width = bgimg.width
+        tmpcanvas.height = bgimg.height
+        var tmpctx = tmpcanvas.getContext('2d');
+        tmpctx.drawImage(bgimg,0,0,tmpcanvas.width, tmpcanvas.height)
+
+        var tmpdata = tmpctx.getImageData(0,0,tmpcanvas.width,tmpcanvas.height)
+
+        tmpdata = imgdataAlphaFromLabel( bbd, label, tmpdata)
+        tmpctx.putImageData(tmpdata, 0, 0);
+
+        var objcanvas = document.createElement('canvas');
+        objcanvas.width = bbd.x2-bbd.x1;
+        objcanvas.height = bbd.y2-bbd.y1;
+        var objctx = objcanvas.getContext('2d');
+
+        objctx.drawImage(tmpcanvas,
+				    bbd.x1, bbd.y1,
+                    bbd.x2-bbd.x1, bbd.y2-bbd.y1,
+				    0, 0, bbd.x2-bbd.x1, bbd.y2-bbd.y1);
+    
+        
+        document.getElementById('gameArea').appendChild(objcanvas);
+        
+    }
+
+    function createbgobjs(bgobjimg){
+        var rgbfunction = function(r,g,b){
+            if(Math.floor((r+g+b)/3) > 128){
+                return 255
+            } else {
+                return 0
+            }
+        }
+
+        var objs = function(mx){
+            var width = mx[0].length;
+            var height = mx.length;
+            var blob = twoD2blob(mx);
+            //console.log(blob)
+            var tlabel = ccl.eBlobExtraction(blob,width,height);
+            //var ctx = document.getElementById('topcanvas').getContext('2d')
+            //var imagedata = ctx.getImageData(0,0,width,height);
+            //ccl.eBlobColouring(imagedata.data, width, height, tlabel)
+            //ctx.putImageData(imagedata, 0, 0)
+            
+            var tbounds = ccl.eBlobBounds(tlabel,width,height);
+            for(var i=0; i< tbounds.length; i++){
+                var bound = tbounds[i]
+                if(bound.l != 0){
+                    objtoimg(bound,tlabel);
+                }
+            }
+            
+        }        
+
+        imgtomatrix(bgobjimg,rgbfunction,objs)
+
     }
 
     //public
@@ -127,7 +246,7 @@ function screen(width, height) {
         };
         img2.src = level.maskimg;
 
-        
+        createbgobjs(level.bgobjimg)
     }
 
     this.writeMessage = function(message,bgcolor) {
@@ -273,16 +392,6 @@ function touchy() {
         dontCrossCorners: true
     });
 
-    function Create2DArray(rows) {
-        var arr = [];
-
-        for (var i=0;i<rows;i++) {
-            arr[i] = [];
-        }
-
-        return arr;
-    }
-
     function createwalkable(){
 
         var canvas = document.createElement('canvas');
@@ -380,6 +489,7 @@ function touchy() {
             bgimg: 'nasa.png',
             maskimg: 'nasamask8.png',
             walkimg: 'nasawalkmask8.png',
+            bgobjimg: 'nasauppermask8.png',
             cmap: {'red': 'space building',
                    'gray':'sky, final frontier',
                    'lime':'the wheel' }
