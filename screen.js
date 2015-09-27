@@ -1,5 +1,13 @@
 function screen(width, height) {
 
+    function setpixelated(context){
+        context['imageSmoothingEnabled'] = false;
+        context['mozImageSmoothingEnabled'] = false;
+        context['oImageSmoothingEnabled'] = false;
+        context['webkitImageSmoothingEnabled'] = false;
+        context['msImageSmoothingEnabled'] = false;
+    }
+
     //private
     var cnvwidth = width;
     var cnvheight = height; 
@@ -24,7 +32,8 @@ function screen(width, height) {
         canvas.style.marginLeft = "auto"; //this and
         canvas.style.marginRight = "auto" //this makes all canvas centered
 
-        canvas.style['image-rendering'] = "pixelated";
+        canvas.style['image-rendering'] = "crisp-edges";
+        setpixelated(canvas.getContext('2d'))
         gamearea.appendChild(canvas);
         cnvs[arraycnvs[i]] = canvas
     }
@@ -34,6 +43,7 @@ function screen(width, height) {
     var ctx = maincanvas.getContext('2d');
     var ctxm = maskcanvas.getContext('2d');
     var actx = document.getElementById('activecanvas').getContext('2d');
+
     var maskdata = []
 
     var mscale = 1;
@@ -100,7 +110,7 @@ function screen(width, height) {
         var canvas = document.createElement('canvas');
         canvas.width  = width;
         canvas.height = height;
-        canvas.style['image-rendering'] = "pixelated";
+        canvas.style['image-rendering'] = "crisp-edges";
 
         var ctx = canvas.getContext('2d');
         var img = new Image();
@@ -166,6 +176,7 @@ function screen(width, height) {
         var objcanvas = document.createElement('canvas');
         objcanvas.width = bbd.x2-bbd.x1;
         objcanvas.height = bbd.y2-bbd.y1;
+        objcanvas.style['image-rendering'] = "crisp-edges";
         var objctx = objcanvas.getContext('2d');
 
         objctx.drawImage(tmpcanvas,
