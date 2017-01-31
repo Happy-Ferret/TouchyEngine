@@ -10,7 +10,7 @@ function screen(width, height) {
 
     //private
     var cnvwidth = width;
-    var cnvheight = height; 
+    var cnvheight = height;
 
     var gamearea = document.getElementById('gameArea')
     var arraycnvs = [ 'maskcanvas', 'maincanvas', 'activecanvas']
@@ -27,7 +27,7 @@ function screen(width, height) {
         canvas.style.zIndex   = i+1;
         canvas.style.position = "absolute"; //required by zIndex
 
-        canvas.style.left = 0; //this 
+        canvas.style.left = 0; //this
         canvas.style.right = 0; //this
         canvas.style.marginLeft = "auto"; //this and
         canvas.style.marginRight = "auto" //this makes all canvas centered
@@ -50,7 +50,7 @@ function screen(width, height) {
 
     function getpixel(x,y){
         var imgW = maskdata.width
-        
+
         var red = maskdata.data[((imgW * y) + x) * 4];
         var green = maskdata.data[((imgW * y) + x) * 4 + 1];
         var blue = maskdata.data[((imgW * y) + x) * 4 + 2];
@@ -73,8 +73,8 @@ function screen(width, height) {
         for (var i=0; i<arraycnvs.length; i++){
             var canva = arraycnvs[i];
             if(window.innerHeight > window.innerWidth){
-                scale = window.innerWidth/cnvs[canva].width       
-            } else { 
+                scale = window.innerWidth/cnvs[canva].width
+            } else {
                 scale = window.innerHeight/cnvs[canva].height
             }
             cnvs[canva].style.height = scale*cnvs[canva].height + 'px';
@@ -83,7 +83,7 @@ function screen(width, height) {
                 mscale = scale
             }
         }
-        
+
     }
 
     function compareAobjs(a,b) {
@@ -123,9 +123,9 @@ function screen(width, height) {
             for (var j=0; j<imgData.height; j++) {
                 for (var i=0; i<imgData.width; i++) {
                     var index=(j*4)*imgData.width+(i*4);
-                    var red=imgData.data[index];   
+                    var red=imgData.data[index];
                     var green=imgData.data[index+1];
-                    var blue=imgData.data[index+2];    
+                    var blue=imgData.data[index+2];
 
                     matrix[j][i] = rgbcondition(red,green,blue);
 
@@ -150,13 +150,13 @@ function screen(width, height) {
 
                 if( oneDto2D(label, imgdata.width, i, j) != tf){
                     //make alpha total
-                    imgdata.data[index+3]=0;  
+                    imgdata.data[index+3]=0;
                 }
             }
         }
 
         return imgdata
-        
+
     }
 
     function objtoimg(bbd, label){
@@ -193,9 +193,9 @@ function screen(width, height) {
             this['h'] = bbd.y2-bbd.y1
             this['img'] = objc
         }
-    
+
         aobjs.push(new activeobj(bbd,objcanvas))
-        
+
     }
 
     function createbgobjs(bgobjimg){
@@ -217,7 +217,7 @@ function screen(width, height) {
             //var imagedata = ctx.getImageData(0,0,width,height);
             //ccl.eBlobColouring(imagedata.data, width, height, tlabel)
             //ctx.putImageData(imagedata, 0, 0)
-            
+
             var tbounds = ccl.eBlobBounds(tlabel,width,height);
             for(var i=0; i< tbounds.length; i++){
                 var bound = tbounds[i]
@@ -225,8 +225,8 @@ function screen(width, height) {
                     objtoimg(bound,tlabel);
                 }
             }
-            
-        }        
+
+        }
 
         imgtomatrix(bgobjimg,rgbfunction,objs)
 
@@ -241,16 +241,16 @@ function screen(width, height) {
         var img1 = new Image();
         img1.onload = function () {
             ctx.drawImage(img1, 0, 0);
-            createbgobjs(level.bgobjimg)
+            createbgobjs('levels/' + level.name + '/' + level.bgobjimg)
         };
-        img1.src = level.bgimg;
+        img1.src = 'levels/' + level.name + '/' + level.bgimg;
 
         var img2 = new Image();
         img2.onload = function () {
             ctxm.drawImage(img2, 0, 0);
             maskdata = ctxm.getImageData(0, 0, maskcanvas.width, maskcanvas.height);
         };
-        img2.src = level.maskimg;      
+        img2.src = 'levels/' + level.name + '/' + level.maskimg;
     }
 
     this.writeMessage = function(message,bgcolor) {
@@ -281,14 +281,13 @@ function screen(width, height) {
 
     actx.fillStyle = '#330033';
 
-    this.drawloop = function(p){ 
+    this.drawloop = function(p){
         actx.clearRect(0,0,cnvwidth,cnvheight)
-        drawaobjs(actx)      
+        drawaobjs(actx)
     };
 
     this.loop = function(){};
-    
+
     //init
     resizecanvases()
 }
-
