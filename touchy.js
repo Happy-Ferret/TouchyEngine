@@ -7,6 +7,7 @@ function touchy() {
     var player = []
     var level = []
     var path = []
+    player.reached = false;
 
     var walkmatrix = []
     var distancemx = []
@@ -76,9 +77,11 @@ function touchy() {
 
     function consumepath(){
         if(path.length){
-            var consume = 2
+            player.reached = false;
+
+            var consume = 2;
             if(ismobile){
-                consume = 3*consume
+                consume = 3*consume;
             }
 
             for(;consume>0;consume--){
@@ -86,12 +89,18 @@ function touchy() {
                     var cords = path.shift();
                     player.x = cords[0];
                     player.y = cords[1];
-                    var size = distancemx[player.y][player.x]
-                    player.w = Math.floor(player.ow * size)
-                    player.h = Math.floor(player.oh * size)
+                    var size = distancemx[player.y][player.x];
+                    player.w = Math.floor(player.ow * size);
+                    player.h = Math.floor(player.oh * size);
                 }
             }
 
+        } else {
+          if(player.reached == false){
+            player.reached = true;
+            var event = new Event('player_arrived');
+            document.dispatchEvent(event);
+          }
         }
     }
 
