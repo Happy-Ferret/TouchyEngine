@@ -66,10 +66,10 @@ function move(width, height, player, level, scr, ismobile){
     } else {
       var destiny = scr.getxyfromxy(x, y)
     }
-    console.log('destination: ' + destiny.x + ', ' + destiny.y)
-    console.log('playerpos: ' + player.x + ', ' + player.y)
-        //console.log(gridBackup)
-        //console.log(walkmatrix[destiny.y][destiny.x])
+    // console.log('destination: ' + destiny.x + ', ' + destiny.y)
+    // console.log('playerpos: ' + player.x + ', ' + player.y)
+    //console.log(gridBackup)
+    //console.log(walkmatrix[destiny.y][destiny.x])
 
     path = finder.findPath(player.x, player.y, destiny.x, destiny.y, gridBackup);
   };
